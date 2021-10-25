@@ -1,62 +1,17 @@
-import flask, os, base64, requests, random, json
-from dotenv import load_dotenv, find_dotenv
-from flask_sqlalchemy import SQLAlchemy
+from app import app, db
+from models import User, Artist
+import os
 from genius import get_lyrics_link
 from spotify import get_access_token, get_song_data
+
+import flask
 from flask import redirect, url_for
-from flask_login import login_user, current_user, LoginManager, login_required, logout_user, UserMixin
+from flask_login import login_user, current_user, LoginManager, login_required, logout_user
 
+import random
+import base64
+import requests
 
-load_dotenv(find_dotenv())
-
-app = flask.Flask(__name__, static_folder='./build/static')
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///test.db'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = b"I am a secret key!"  # don't defraud my app ok?
-
-db = SQLAlchemy(app)
-
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80))
-
-    def __repr__(self):
-        return f"<User {self.username}>"
-
-    def get_username(self):
-        return self.username
-
-
-class Artist(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    artist_id = db.Column(db.String(80), nullable=False)
-    username = db.Column(db.String(80), nullable=False)
-
-    def __repr__(self):
-        return f"<Artist {self.artist_id}>"
-
-
-db.create_all()
-
-
-# This tells our Flask app to look at the results of `npm build` instead of the 
-# actual files in /templates when we're looking for the index page file. This allows
-# us to load React code into a webpage. Look up create-react-app for more reading on
-# why this is necessary.
-bp = flask.Blueprint("bp", __name__, template_folder="./build")
-
-@bp.route('/index')
-@login_required
-def index():
-    # TODO: insert the data fetched by your app main page here as a JSON
-    DATA = {"your": "data here"}
-    data = json.dumps(DATA)
-    return flask.render_template(
-        "index.html",
-        data=data,
-    )
-
-app.register_blueprint(bp)
 
 login_manager = LoginManager()
 login_manager.login_view = "login"
@@ -114,7 +69,7 @@ def login_post():
     user = User.query.filter_by(username=username).first()
     if user:
         login_user(user)
-        return flask.redirect(flask.url_for("bp.index"))
+        return flask.redirect(flask.url_for("index"))
 
     else:
         return flask.jsonify({"status": 401, "reason": "Username or Password Error"})
@@ -128,24 +83,24 @@ def save():
         get_song_data(artist_id, access_token)
     except Exception:
         flask.flash("Invalid artist ID entered")
-        return flask.redirect(flask.url_for("bp.index"))
+        return flask.redirect(flask.url_for("index"))
 
     username = current_user.username
     db.session.add(Artist(artist_id=artist_id, username=username))
     db.session.commit()
-    return flask.redirect(flask.url_for("bp.index"))
+    return flask.redirect(flask.url_for("index"))
 
 
 @app.route("/")
 def main():
     if current_user.is_authenticated:
-        return flask.redirect(flask.url_for("bp.index"))
+        return flask.redirect(flask.url_for("index"))
     return flask.redirect(flask.url_for("login"))
 
 
-@app.route("/foo")
+@app.route("/index")
 @login_required
-def foo():
+def index():
     artists = Artist.query.filter_by(username=current_user.username).all()
     artist_ids = [a.artist_id for a in artists]
     has_artists_saved = len(artist_ids) > 0
@@ -183,8 +138,7 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-
-app.run(
-    host=os.getenv('IP', '0.0.0.0'),
-    port=int(os.getenv('PORT', 8081)),
-)
+if __name__ == "__main__":
+    app.run(
+        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 8080)), debug=True
+    )
