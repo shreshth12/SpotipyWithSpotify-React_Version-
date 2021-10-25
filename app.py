@@ -4,17 +4,25 @@ from flask_sqlalchemy import SQLAlchemy
 from genius import get_lyrics_link
 from spotify import get_access_token, get_song_data
 from flask import redirect, url_for
-from flask_login import login_user, current_user, LoginManager, login_required, logout_user, UserMixin
+from flask_login import (
+    login_user,
+    current_user,
+    LoginManager,
+    login_required,
+    logout_user,
+    UserMixin,
+)
 
 
 load_dotenv(find_dotenv())
 
-app = flask.Flask(__name__, static_folder='./build/static')
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///test.db'
+app = flask.Flask(__name__, static_folder="./build/static")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = b"I am a secret key!"  # don't defraud my app ok?
+app.secret_key = b"I am a secret key!"
 
 db = SQLAlchemy(app)
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,13 +47,14 @@ class Artist(db.Model):
 db.create_all()
 
 
-# This tells our Flask app to look at the results of `npm build` instead of the 
+# This tells our Flask app to look at the results of `npm build` instead of the
 # actual files in /templates when we're looking for the index page file. This allows
 # us to load React code into a webpage. Look up create-react-app for more reading on
 # why this is necessary.
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
-@bp.route('/index')
+
+@bp.route("/index")
 @login_required
 def index():
     # TODO: insert the data fetched by your app main page here as a JSON
@@ -72,18 +81,21 @@ def index():
         )
 
     DATA = {
-        "has_artists_saved":has_artists_saved,
-        "song_name":song_name,
-        "song_artist":song_artist,
-        "song_image_url":song_image_url,
-        "preview_url":preview_url,
-        "genius_url":genius_url
+        "has_artists_saved": has_artists_saved,
+        "song_name": song_name,
+        "song_artist": song_artist,
+        "song_image_url": song_image_url,
+        "preview_url": preview_url,
+        "genius_url": genius_url,
+        "artist_ids": artist_ids,
     }
+
     data = json.dumps(DATA)
     return flask.render_template(
         "index.html",
         data=data,
     )
+
 
 app.register_blueprint(bp)
 
@@ -170,18 +182,22 @@ def main():
     if current_user.is_authenticated:
         return flask.redirect(flask.url_for("bp.index"))
     return flask.redirect(flask.url_for("login"))
-    
+
+
 @app.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for("login"))
 
-@app.route("/increment", methods=['POST'])
+
+@app.route("/increment", methods=["POST"])
 def increment():
     num_clicks = flask.request.json.get("num_clicks")
     return flask.jsonify({"num_clicks_server": num_clicks + 1})
 
-app.run(
-    host=os.getenv('IP', '0.0.0.0'),
-    port=int(os.getenv('PORT', 8081)),
-)
+
+if __name__ == "__main__":
+    app.run(
+        host=os.getenv("IP", "0.0.0.0"),
+        port=int(os.getenv("PORT", 8081)),
+    )
