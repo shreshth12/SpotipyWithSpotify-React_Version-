@@ -49,7 +49,36 @@ bp = flask.Blueprint("bp", __name__, template_folder="./build")
 @login_required
 def index():
     # TODO: insert the data fetched by your app main page here as a JSON
-    DATA = {"your": "data here"}
+    artists = Artist.query.filter_by(username=current_user.username).all()
+    artist_ids = [a.artist_id for a in artists]
+    has_artists_saved = len(artist_ids) > 0
+    if has_artists_saved:
+        artist_id = random.choice(artist_ids)
+
+        # API calls
+        access_token = get_access_token()
+        (song_name, song_artist, song_image_url, preview_url) = get_song_data(
+            artist_id, access_token
+        )
+        genius_url = get_lyrics_link(song_name)
+
+    else:
+        (song_name, song_artist, song_image_url, preview_url, genius_url) = (
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+
+    DATA = {
+        "has_artists_saved":has_artists_saved,
+        "song_name":song_name,
+        "song_artist":song_artist,
+        "song_image_url":song_image_url,
+        "preview_url":preview_url,
+        "genius_url":genius_url
+    }
     data = json.dumps(DATA)
     return flask.render_template(
         "index.html",
@@ -141,43 +170,7 @@ def main():
     if current_user.is_authenticated:
         return flask.redirect(flask.url_for("bp.index"))
     return flask.redirect(flask.url_for("login"))
-
-
-@app.route("/foo")
-@login_required
-def foo():
-    artists = Artist.query.filter_by(username=current_user.username).all()
-    artist_ids = [a.artist_id for a in artists]
-    has_artists_saved = len(artist_ids) > 0
-    if has_artists_saved:
-        artist_id = random.choice(artist_ids)
-
-        # API calls
-        access_token = get_access_token()
-        (song_name, song_artist, song_image_url, preview_url) = get_song_data(
-            artist_id, access_token
-        )
-        genius_url = get_lyrics_link(song_name)
-
-    else:
-        (song_name, song_artist, song_image_url, preview_url, genius_url) = (
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-
-    return flask.render_template(
-        "index.html",
-        has_artists_saved=has_artists_saved,
-        song_name=song_name,
-        song_artist=song_artist,
-        song_image_url=song_image_url,
-        preview_url=preview_url,
-        genius_url=genius_url,
-    )
-
+    
 @app.route("/logout")
 def logout():
     logout_user()
