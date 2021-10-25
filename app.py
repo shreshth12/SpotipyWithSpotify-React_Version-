@@ -176,6 +176,10 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route("/increment", methods=['POST'])
+def increment():
+    num_clicks = flask.request.json.get("num_clicks")
+    return flask.jsonify({"num_clicks_server": num_clicks + 1})
 
 app.run(
     host=os.getenv('IP', '0.0.0.0'),

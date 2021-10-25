@@ -7,12 +7,28 @@ function App() {
   // fetches JSON data passed in by flask.render_template and loaded
   // in public/index.html in the script with id "data"
   const args = JSON.parse(document.getElementById("data").text);
+  const [numClicks, setNumClicks] = useState(0); 
 
-  // TODO: Implement your main page as a React component.
-  let has_artists_saved = false;
+  function onButtonClick(){
+    console.log(JSON.stringify({"num_clicks": numClicks}))
+    fetch('/increment',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({"num_clicks": numClicks}),
+    }
+    ).then(response => response.json()).then(data => {
+      console.log(data);
+      setNumClicks(data.num_clicks_server);
+    });
+  }
+  
   return(
     <>
-    <h1> Song Explorer</h1>
+    <h1> Song Explorer </h1>
+    <button onClick={onButtonClick}> Click me! </button>
+    <h1>Button has been clicked {numClicks} times!</h1>
 		{ args.has_artists_saved ? (
       <>
 			<h2>{ args.song_name }</h2>
