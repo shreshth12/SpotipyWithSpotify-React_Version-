@@ -9,13 +9,19 @@ function App() {
   const args = JSON.parse(document.getElementById("data").text);
   const [numClicks, setNumClicks] = useState(0);
   const [artists, setArtists] = useState(args.artist_ids);
-  const [entered_artist, setEnteredArtists] = useState('');
 
   const deleteArtist = (id) => {
     setArtists(artists.filter(el => el !== id));
   }
 
+  function addArtist(event) {
+    event.preventDefault();
+    const artist_name = event.target.artist_name.value;
+    setArtists(oldArray => [...oldArray, artist_name]);
+  };
+
   function onButtonClick() {
+    console.log(artists);
     console.log(JSON.stringify({ "num_clicks": numClicks }))
     fetch('/increment', {
       method: 'POST',
@@ -68,10 +74,15 @@ function App() {
         })}
       </>
       <h1>Save a favorite artist ID for later:</h1>
+
+      <form onSubmit={(event) => addArtist(event)}>
+        <input type="text" name="artist_name" />
+        <button type="submit">Add</button>
+      </form>
+
       <form method="POST" action="/save">
         <input type="text" name="artist_id" />
         <input type="submit" value="Submit" />
-        <input type="submit" value="Add" onClick={add} />
       </form>
     </>
   );
