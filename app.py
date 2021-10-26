@@ -88,6 +88,7 @@ def index():
         "preview_url": preview_url,
         "genius_url": genius_url,
         "artist_ids": artist_ids,
+        "current_user": current_user.username,
     }
 
     data = json.dumps(DATA)
@@ -165,35 +166,31 @@ def login_post():
 def save():
     artists = flask.request.json.get("artists")
     # artist_id = flask.request.form.get("artist_id")
+    all_artists = Artist.query.filter_by(username=current_user.username).all()
+
+    if len(artists) == 0:
+        for x in all_artists:
+            db.session.delete(x)
+            db.session.commit()
+
     for artist in artists:
         try:
             username = current_user.username
             access_token = get_access_token()
             get_song_data(artist, access_token)
-            url = Artist.query.filter_by(artist_id=artist, username=username).first()
-            if url:
-                pass
-            else:
-                db.session.add(Artist(artist_id=artist, username=username))
-                db.session.commit()
-        except Exception:
-            print(f"Artist ID: {artist} was invalid")
-            flask.flash("Invalid artist ID entered")
-            # return flask.redirect(flask.url_for("bp.index"))
 
-    # return flask.redirect(flask.url_for("bp.index"))
-    return flask.jsonify({"artists_from_server": artists})
+            all_artists = Artist.query.filter_by(username=username).all()
 
+            if len(artists) == 0:
+                for x in all_artists:
+                    db.session.delete(x)
+                    db.session.commit()
 
-@app.route("/save", methods=["POST"])
-def delete():
-    artists = flask.request.json.get("artists")
-    # artist_id = flask.request.form.get("artist_id")
-    for artist in artists:
-        try:
-            username = current_user.username
-            access_token = get_access_token()
-            get_song_data(artist, access_token)
+            for x in all_artists:
+                if x.artist_id not in artists:
+                    db.session.delete(x)
+                    db.session.commit()
+
             url = Artist.query.filter_by(artist_id=artist, username=username).first()
             if url:
                 pass
@@ -220,18 +217,6 @@ def main():
 def logout():
     logout_user()
     return redirect(url_for("login"))
-
-
-@app.route("/increment", methods=["POST"])
-def increment():
-    num_clicks = flask.request.json.get("num_clicks")
-    return flask.jsonify({"num_clicks_server": num_clicks + 1})
-
-
-@app.route("/printer", methods=["POST"])
-def printer():
-    artists = flask.request.json.get("artists")
-    return flask.jsonify({"artists from server": artists})
 
 
 if __name__ == "__main__":

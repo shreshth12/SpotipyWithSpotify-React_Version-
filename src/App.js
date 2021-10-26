@@ -22,10 +22,6 @@ function App() {
 
   function printAddedArtists(event) {
     event.preventDefault();
-    // artists.map(x => {
-    //   console.log(x);
-    // }
-    // )
 
     console.log(JSON.stringify({ "artists": artists }));
 
@@ -38,29 +34,14 @@ function App() {
     }).then(response => response.json()).then(data => {
       console.log(data);
       setArtists(data.artists_from_server);
+      window.location.reload(true);
     })
-  }
 
-  function onButtonClick() {
-    console.log(JSON.stringify({ "num_clicks": numClicks }))
-    fetch('/increment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ "num_clicks": numClicks }),
-    }
-    ).then(response => response.json()).then(data => {
-      console.log(data);
-      setNumClicks(data.num_clicks_server);
-    });
   }
 
   return (
     <>
-      <h1> Song Explorer </h1>
-      <button onClick={onButtonClick}> Click me! </button>
-      <h1>Button has been clicked {numClicks} times!</h1>
+      <h1> {args.current_user}'s Song Explorer </h1>
       {args.has_artists_saved ? (
         <>
           <h2>{args.song_name}</h2>
