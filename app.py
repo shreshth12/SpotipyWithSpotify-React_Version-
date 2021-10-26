@@ -163,18 +163,50 @@ def login_post():
 
 @app.route("/save", methods=["POST"])
 def save():
-    artist_id = flask.request.form.get("artist_id")
-    try:
-        access_token = get_access_token()
-        get_song_data(artist_id, access_token)
-    except Exception:
-        flask.flash("Invalid artist ID entered")
-        return flask.redirect(flask.url_for("bp.index"))
+    artists = flask.request.json.get("artists")
+    # artist_id = flask.request.form.get("artist_id")
+    for artist in artists:
+        try:
+            username = current_user.username
+            access_token = get_access_token()
+            get_song_data(artist, access_token)
+            url = Artist.query.filter_by(artist_id=artist, username=username).first()
+            if url:
+                pass
+            else:
+                db.session.add(Artist(artist_id=artist, username=username))
+                db.session.commit()
+        except Exception:
+            print(f"Artist ID: {artist} was invalid")
+            flask.flash("Invalid artist ID entered")
+            # return flask.redirect(flask.url_for("bp.index"))
 
-    username = current_user.username
-    db.session.add(Artist(artist_id=artist_id, username=username))
-    db.session.commit()
-    return flask.redirect(flask.url_for("bp.index"))
+    # return flask.redirect(flask.url_for("bp.index"))
+    return flask.jsonify({"artists_from_server": artists})
+
+
+@app.route("/save", methods=["POST"])
+def delete():
+    artists = flask.request.json.get("artists")
+    # artist_id = flask.request.form.get("artist_id")
+    for artist in artists:
+        try:
+            username = current_user.username
+            access_token = get_access_token()
+            get_song_data(artist, access_token)
+            url = Artist.query.filter_by(artist_id=artist, username=username).first()
+            if url:
+                pass
+            else:
+                db.session.add(Artist(artist_id=artist, username=username))
+                db.session.commit()
+        except Exception:
+            print(f"Artist ID: {artist} was invalid")
+            flask.flash("Invalid artist ID entered")
+            # return flask.redirect(flask.url_for("bp.index"))
+
+    # return flask.redirect(flask.url_for("bp.index"))
+    return flask.jsonify({"artists_from_server": artists})
 
 
 @app.route("/")
@@ -194,6 +226,12 @@ def logout():
 def increment():
     num_clicks = flask.request.json.get("num_clicks")
     return flask.jsonify({"num_clicks_server": num_clicks + 1})
+
+
+@app.route("/printer", methods=["POST"])
+def printer():
+    artists = flask.request.json.get("artists")
+    return flask.jsonify({"artists from server": artists})
 
 
 if __name__ == "__main__":

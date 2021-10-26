@@ -20,8 +20,28 @@ function App() {
     setArtists(oldArray => [...oldArray, artist_name]);
   };
 
+  function printAddedArtists(event) {
+    event.preventDefault();
+    // artists.map(x => {
+    //   console.log(x);
+    // }
+    // )
+
+    console.log(JSON.stringify({ "artists": artists }));
+
+    fetch('/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ "artists": artists }),
+    }).then(response => response.json()).then(data => {
+      console.log(data);
+      setArtists(data.artists_from_server);
+    })
+  }
+
   function onButtonClick() {
-    console.log(artists);
     console.log(JSON.stringify({ "num_clicks": numClicks }))
     fetch('/increment', {
       method: 'POST',
@@ -34,10 +54,6 @@ function App() {
       console.log(data);
       setNumClicks(data.num_clicks_server);
     });
-  }
-
-  function add() {
-    return console.log('Clicked!')
   }
 
   return (
@@ -80,8 +96,10 @@ function App() {
         <button type="submit">Add</button>
       </form>
 
-      <form method="POST" action="/save">
-        <input type="text" name="artist_id" />
+      {/* method="POST" action="/save" */}
+      {/* <input type="text" name="artist_id" /> */}
+
+      <form onSubmit={(event) => printAddedArtists(event)}>
         <input type="submit" value="Submit" />
       </form>
     </>
