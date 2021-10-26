@@ -8,6 +8,12 @@ function App() {
   // in public/index.html in the script with id "data"
   const args = JSON.parse(document.getElementById("data").text);
   const [numClicks, setNumClicks] = useState(0);
+  const [artists, setArtists] = useState(args.artist_ids);
+  const [entered_artist, setEnteredArtists] = useState('');
+
+  const deleteArtist = (id) => {
+    setArtists(artists.filter(el => el !== id));
+  }
 
   function onButtonClick() {
     console.log(JSON.stringify({ "num_clicks": numClicks }))
@@ -22,6 +28,10 @@ function App() {
       console.log(data);
       setNumClicks(data.num_clicks_server);
     });
+  }
+
+  function add() {
+    return console.log('Clicked!')
   }
 
   return (
@@ -49,9 +59,11 @@ function App() {
       }
       <>
         <h1>Your saved artists:</h1>
-        {args.artist_ids.map(artist_id => {
+        {artists.map(artist_id => {
           return (
-            <div>{artist_id}</div>
+            <div>
+              <p>{artist_id}</p> <button onClick={() => deleteArtist(artist_id)}>Delete</button>
+            </div>
           )
         })}
       </>
@@ -59,6 +71,7 @@ function App() {
       <form method="POST" action="/save">
         <input type="text" name="artist_id" />
         <input type="submit" value="Submit" />
+        <input type="submit" value="Add" onClick={add} />
       </form>
     </>
   );
