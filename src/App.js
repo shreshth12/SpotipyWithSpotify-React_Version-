@@ -7,7 +7,6 @@ function App() {
   // fetches JSON data passed in by flask.render_template and loaded
   // in public/index.html in the script with id "data"
   const args = JSON.parse(document.getElementById("data").text);
-  const [numClicks, setNumClicks] = useState(0);
   const [artists, setArtists] = useState(args.artist_ids);
 
   const deleteArtist = (id) => {
@@ -75,13 +74,7 @@ function App() {
       <form onSubmit={(event) => addArtist(event)}>
         <input type="text" name="artist_name" />
         <button type="submit">Add</button>
-      </form>
-
-      {/* method="POST" action="/save" */}
-      {/* <input type="text" name="artist_id" /> */}
-
-      <form onSubmit={(event) => printAddedArtists(event)}>
-        <input type="submit" value="Submit" />
+        <button type="submit" onClick={(event) => printAddedArtists(event)}>Submit</button>
       </form>
     </>
   );
