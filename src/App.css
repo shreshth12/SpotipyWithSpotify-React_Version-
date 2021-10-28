@@ -38,9 +38,11 @@
 }
 
 body {
-  background-color: lightblue;
+  background-color: darkorange;
   text-align: center;
+  font-size: 15px;
   font-family: Arial, Helvetica, sans-serif;
+  margin: 10px;
 }
 
 img {
@@ -54,3 +56,10 @@ audio {
 .flashes {
   color: red;
 }
+
+.container{
+  padding: 15px;
+  background-color: teal;
+  color: azure;
+}
+
