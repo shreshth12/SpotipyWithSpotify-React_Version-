@@ -9,6 +9,7 @@ function App() {
   const args = JSON.parse(document.getElementById("data").text);
   const [artists, setArtists] = useState(args.artist_ids);
   const [error, setError] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   const deleteArtist = (id) => {
     setArtists(artists.filter(el => el !== id));
@@ -18,6 +19,7 @@ function App() {
     event.preventDefault();
     const artist_name = event.target.artist_name.value;
     setArtists(oldArray => [...oldArray, artist_name]);
+    setInputValue("");
   };
 
   function printAddedArtists(event) {
@@ -77,7 +79,7 @@ function App() {
       <h1>Save a favorite artist ID for later:</h1>
 
       <form onSubmit={(event) => addArtist(event)}>
-        <input type="text" name="artist_name" />
+        <input type="text" name="artist_name" value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
         <button type="submit">Add</button>
         <button type="submit" onClick={(event) => printAddedArtists(event)}>Submit</button>
       </form>
