@@ -8,6 +8,7 @@ function App() {
   // in public/index.html in the script with id "data"
   const args = JSON.parse(document.getElementById("data").text);
   const [artists, setArtists] = useState(args.artist_ids);
+  const [error, setError] = useState('');
 
   const deleteArtist = (id) => {
     setArtists(artists.filter(el => el !== id));
@@ -20,10 +21,8 @@ function App() {
   };
 
   function printAddedArtists(event) {
-    event.preventDefault();
-
-    console.log(JSON.stringify({ "artists": artists }));
-
+    event.preventDefault()
+    // console.log(JSON.stringify({ "artists": artists }));
     fetch('/save', {
       method: 'POST',
       headers: {
@@ -33,13 +32,19 @@ function App() {
     }).then(response => response.json()).then(data => {
       console.log(data);
       setArtists(data.artists_from_server);
-      window.location.reload(true);
+      if (data.error) {
+        setError("Invalid artist ID: " + data.whichArg);
+      }
+      else {
+        window.location.reload(true);
+      }
     })
 
   }
 
   return (
     <>
+      <h3>{error}</h3>
       <h1> {args.current_user}'s Song Explorer </h1>
       {args.has_artists_saved ? (
         <>

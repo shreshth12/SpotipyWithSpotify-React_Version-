@@ -145,7 +145,10 @@ def save():
                 db.session.commit()
         except Exception:
             print(f"Artist ID: {artist} was invalid")
-            flask.flash("Invalid artist ID entered")
+            # flask.flash("Invalid artist ID entered")
+            return flask.jsonify(
+                {"artists_from_server": artists, "error": True, "whichArg": artist}
+            )
 
     return flask.jsonify({"artists_from_server": artists})
 
